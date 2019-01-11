@@ -67,7 +67,7 @@ def no_query_on_input(user_input, context):
 # ---
 
 # TODO: Replace these states with your project's cool states
-
+# 
 # LOCKED OUT state
 def locked_out_on_enter_state(context):
   return 'Where are you locked out?'
