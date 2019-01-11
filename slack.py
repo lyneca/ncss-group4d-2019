@@ -19,7 +19,9 @@ def slack_slash():
 @app.route('/slack/event', methods=['GET', 'POST'])
 def slack_event():
   json=request.json
+  print(request)
   if 'challenge' in json:
     return json["challenge"]
+  return str(request.json)
 if __name__ == '__main__':
   app.run()
