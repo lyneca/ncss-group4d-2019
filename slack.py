@@ -22,6 +22,6 @@ def slack_event():
   print(request)
   if 'challenge' in json:
     return json["challenge"]
-  return str(request.json)
+  return jsonify({'text': 'Hello!'})
 if __name__ == '__main__':
   app.run()
