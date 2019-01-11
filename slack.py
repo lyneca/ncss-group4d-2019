@@ -7,7 +7,7 @@ state = 'NO QUERY'
 context = {}
 
 @app.route('/slack/slash', methods=['GET', 'POST'])
-def slack_event():
+def slack_slash():
   global state, context
   payload = request.values
   print(payload)  # Print payload for debugging.
@@ -16,6 +16,10 @@ def slack_event():
     user_input = payload.get('text')
 
     # todo: finish this slack interface!
-
+@app.route('/slack/event', methods=['GET', 'POST'])
+def slack_event():
+  json=request.json
+  if 'challenge' in json:
+    return json["challenge"]
 if __name__ == '__main__':
   app.run()
