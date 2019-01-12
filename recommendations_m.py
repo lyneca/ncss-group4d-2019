@@ -1,7 +1,7 @@
 import re
 import random
 import dateparser 
-
+import requests
 import nltk.tokenize as nt
 import nltk
 '''
@@ -117,7 +117,8 @@ def movie_on_input(user_input, context):
   context["movie"]=re.search(r"(i.+(see|watch) )(?P<movie>.+)",user_input).group('movie')
   if context["movie"]:
       return 'BOOKING', context, None
-  return 'MOVIE', context, None
+  context["movie"]=user_input
+  return 'BOOKING', context, None
 
 
 
@@ -159,6 +160,8 @@ def movie_genre_on_input(user_input, context):
 
 # top rated
 def movie_toprated_on_enter_state(context):
+  data=requests.get('https://www.imdb.com/search/title?genres='+context['genre']).content.replace("\n",'')
+  print(re.findall(r'''(?<=\?ref_=adv_li_tt\"\>).*(?=\<\/a\>)''',data))
   return 'Here are top rated movies for [LOCATION] and [GENRE]'
 
 def movie_toprated_on_input(user_input, context):
