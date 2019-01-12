@@ -1,7 +1,13 @@
 import re
 import random
+import requests
 
 # API KEY // da1bbf6f7e8f95d9ec57b83ab810f46c
+
+headers = {
+    'Accept': 'application/json',
+    'user-key': 'da1bbf6f7e8f95d9ec57b83ab810f46c',
+}
 
 ERROR_CODE = "Sorry, I couldn't understand what you are saying"
 
@@ -22,24 +28,37 @@ RETURN_VALUES = {
     "LOCATION": [
         "Where are you wanting to eat out?",
         "Where abouts are you wanting to go?",
-    ]
+    ],
 
     "FOOD": [
         "What would you like to eat?",
         "What do you feeling like eating?",
-    ]
+    ],
 
     "RECOMMEND": [
         "I'm currently listing recommend foods for your area",
         "I hope these recommendations can satisfy you",
         "Here are some recommendations because you can't make up your mind",
-    ]
+    ],
 
     "MEAL": [
         "Breakfast, lunch or dinner?",
         "What time of day are you wanting to go?",
+    ],
+
+    "DEFINE": [
+        "Here are meal recommendations for your preference",
+        "Showing menu's for your time of day",
+    ],
+
+    "BOOKING": [
+        "Now you can book your event",
+        "Have fun"
     ]
 }
+
+
+NO_QUERY_STATE = random.choice(RETURN_VALUES["NO QUERY"])
 
 
 def on_enter_state(state, context):
@@ -111,16 +130,35 @@ def food_on_input(user_input, context):
         return "FOOD", context, ERROR_CODE
 
 def recommend_on_enter_state(context):
-    return 'Here are some recommendations. What would you like?'
+
+    params = (
+        ('entity_id', '260'),
+        ('entity_type', 'city'),
+        ('cuisines', '152'),
+        ('sort', 'rating'),
+        ('order', 'desc'),
+        ('count', 5)
+    )
+
+    response = requests.get('https://developers.zomato.com/api/v2.1/search', headers=headers, params=params).json()
+
+    names = [x["restaurant"]["name"] for x in response["restaurants"]]
+
+    return f'Here are some recommendations. What would you like? {names}'
 
     # more code coming
+
+
 
 def recommend_on_input(user_input, context):
     match_yes = re.match('^(i would like to eat |i would like )?(?P<meal>\w+)$', user_input, re.I)
     if user_input.startswith('No' | 'no'):
         return "FOOD", context, None
     elif match_yes:
-        context['meal'] = match.group['meal']
+        if user_input in names:
+            context['meal'] = match.group['meal']
+        else:
+            return "RECOMMEND", context, ERROR_CODE
         return "BOOKING", context, None
     else:
         return "RECOMMEND", context, ERROR_CODE
@@ -140,3 +178,8 @@ def define_on_enter_state(context):
 def define_on_input(user_input, context):
     context['meal'] = user_input
     return "BOOKING", context, None
+
+
+
+
+
