@@ -81,6 +81,7 @@ def on_enter_state(state, context):
 
 
 def on_input(state, user_input, context):
+    user_input = user_input.lower()
     if state == "NO QUERY":
         return no_query_on_input(user_input, context)
     elif state == "DATE":
@@ -202,6 +203,9 @@ def recommend_on_enter_state(context):
     ).json()
 
     names = [x["restaurant"]["name"] for x in response["restaurants"]]
+
+    context['names'] = [x.lower() for x in names]
+
     names = ", ".join(names)
 
     return f'Here are some recommendations for restaurants in your city. What would you like?: {names}'
@@ -212,11 +216,11 @@ def recommend_on_enter_state(context):
 def recommend_on_input(user_input, context):
     match_yes = re.match(
         r'(i( woul|\')d like to eat |i( woul|\')d like )?(?P<meal>\w+)', user_input, re.I)
-    if user_input.lower().startswith('no'):
+    if user_input.startswith('no'):
         return "FOOD", context, None
     elif match_yes:
         if user_input in context['names']:
-            context['meal'] = match_yes.group['meal']
+            context['meal'] = match_yes.group('meal')
         else:
             return "RECOMMEND", context, ERROR_CODE
         return "BOOKING", context, None
