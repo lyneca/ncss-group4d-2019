@@ -2,8 +2,8 @@ import re
 import random
 import dateparser 
 import requests
-import nltk.tokenize as nt
-import nltk
+#import nltk.tokenize as nt
+#import nltk
 '''
 NO QUERY
 DATE
@@ -126,10 +126,11 @@ def movie_on_input(user_input, context):
 
 # recommendations
 def movie_recommendations_on_enter_state(context):
-  out= "Here are the top rated movies for your location:"  # FINISH
-
-
-  out+="Do you want to define by Genre?"
+  out= "Here are the top rated movies for your location:\n"
+  data=requests.get('https://www.imdb.com/showtimes/location?ref_=inth_sh').content.decode("latin")
+  data=re.findall(r'''(?<=\/\?ref_\=shlc_li_tt\"\n\>).*(?=\<\/a\>)''',data)
+  out+="\n".join(data[:5])
+  out+="\n... or do you want to search by Genre?"
   return out
 
 
@@ -137,7 +138,7 @@ def movie_recommendations_on_input(user_input, context):
   if 'yes' in user_input.lower():
     return 'GENRE', context, None 
   context["movie"]=user_input
-  return 'GENRE',context, None
+  return 'BOOKING',context, None
   
 
 
@@ -159,10 +160,12 @@ def movie_genre_on_input(user_input, context):
 
 
 # top rated
-def movie_toprated_on_enter_state(context):
-  data=requests.get('https://www.imdb.com/search/title?genres='+context['genre']).content.decode("latin").replace("\n",'')
-  print(re.findall(r'''(?<=\?ref_=adv_li_tt\"\>).*(?=\<\/a\>)''',data))
-  return 'Here are top rated movies for [LOCATION] and [GENRE]'
+def movie_toprated_on_enter_state(context):#(?<=\<strong\>)-?\d*\..*
+  data=requests.get('https://www.imdb.com/search/title?genres='+context['genre']).content.decode("latin")
+  data=re.findall(r'''(?<=\?ref_=adv_li_tt\"\n\>).*(?=\<\/a\>)''',data)
+  out=f'Here are top rated movies for {context["location"]} and {context["genre"]}'+"\n"
+  out+="\n".join(data)
+  return out
 
 def movie_toprated_on_input(user_input, context):
   context["movie"]=user_input
