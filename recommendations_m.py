@@ -14,6 +14,16 @@ GENRE
 TOP RATED
 '''
 
+RETURNS={
+  'NO QUERY':["Hello"],
+  'DATE':[],
+  'LOCATION':[],
+  'MOVIE':[],
+  'RECOMMENDATIONS':[],
+  'GENRE':[],
+  'TOP RATED':[]
+}
+
 def find_locations(text):
   #ss=nt.sent_tokenize(text)
   #tokenized_sent=[nt.word_tokenize(sent) for sent in ss]
@@ -25,6 +35,13 @@ def find_locations(text):
   #print(pos_sentences)
   #location=location[:-1]
   return text#location
+
+def find_movies(text):
+  movie=re.search(r"(i.+(see|watch) )(?P<movie>.+)",text).group('movie')
+  if not movie:
+    movie=text
+  return movie
+
 def on_enter_state(state, context):
   if state == 'NO QUERY':
     return no_query_on_enter_state(context)
@@ -66,9 +83,10 @@ def on_input(state, user_input, context):
 
 #no query state
 def no_query_on_enter_state(context):
-  return ""
+  return random.choice(RETURNS["NO QUERY"])
 
 def no_query_on_input(user_input, context):
+  #FINISH
   return 'DATE',{}, ''
 
 
@@ -110,11 +128,12 @@ def movie_location_on_input(user_input, context):
 def movie_on_enter_state(context):
   return "What are you interested in watching"
 
+nos=["no idea","not sure","no clue"]
 def movie_on_input(user_input, context):   
-  if "no idea" in user_input.lower() or "not sure" in user_input.lower():
+  if any(i in user_input.lower() for i in nos):
      return 'RECOMMENDATIONS', context, None
   
-  context["movie"]=re.search(r"(i.+(see|watch) )(?P<movie>.+)",user_input).group('movie')
+  context["movie"]=find_movies(user_input)
   if context["movie"]:
       return 'BOOKING', context, None
   context["movie"]=user_input
@@ -137,7 +156,7 @@ def movie_recommendations_on_enter_state(context):
 def movie_recommendations_on_input(user_input, context):
   if 'yes' in user_input.lower():
     return 'GENRE', context, None 
-  context["movie"]=user_input
+  context["movie"]=find_movies(user_input)
   return 'BOOKING',context, None
   
 
@@ -164,11 +183,11 @@ def movie_toprated_on_enter_state(context):#(?<=\<strong\>)-?\d*\..*
   data=requests.get('https://www.imdb.com/search/title?genres='+context['genre']).content.decode("latin")
   data=re.findall(r'''(?<=\?ref_=adv_li_tt\"\n\>).*(?=\<\/a\>)''',data)
   out=f'Here are top rated movies for {context["location"]} and {context["genre"]}'+"\n"
-  out+="\n".join(data)
+  out+="\n".join(data[:5])
   return out
 
 def movie_toprated_on_input(user_input, context):
-  context["movie"]=user_input
+  context["movie"]=find_movies(user_input)
   return 'BOOKING', context, None
 
 
