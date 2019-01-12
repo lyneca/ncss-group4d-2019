@@ -1,4 +1,4 @@
-from bot import on_enter_state, on_input
+from restaurant import on_enter_state, on_input
 
 state = 'NO QUERY'
 context = None
