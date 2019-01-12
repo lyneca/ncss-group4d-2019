@@ -100,10 +100,12 @@ def food_on_enter_state(context):
     return 'What would you like to eat?'
 
 def food_on_input(user_input, context):
-    if user_input.startswith('I want to eat'):
-        context['food'] = user_input[len('I want to eat'):]
+    match = re.match('^(i want |i would like )?(?P<food>\w+)$', user_input, re.I)
+    match_elif = re.match("^(i am not sure|i don't know|i have no clue)$", user_input, re.I)
+    if match:
+        context['food'] = match.group['food']
         return 'BOOKING', context, None
-    elif user_input == "I'm not sure":
+    elif match_elif:
         return 'RECOMMEND', context, None
     else:
         return "FOOD", context, ERROR_CODE
@@ -114,10 +116,11 @@ def recommend_on_enter_state(context):
     # more code coming
 
 def recommend_on_input(user_input, context):
-    if user_input.startswith('No'):
+    match_yes = re.match('^(i would like to eat |i would like )?(?P<meal>\w+)$', user_input, re.I)
+    if user_input.startswith('No' | 'no'):
         return "FOOD", context, None
-    elif user_input.startswith("Yes, I would like to eat"):
-        context['meal'] = user_input[len("I would like to eat"):]
+    elif match_yes:
+        context['meal'] = match.group['meal']
         return "BOOKING", context, None
     else:
         return "RECOMMEND", context, ERROR_CODE
