@@ -160,7 +160,7 @@ def movie_genre_on_input(user_input, context):
 
 # top rated
 def movie_toprated_on_enter_state(context):
-  data=requests.get('https://www.imdb.com/search/title?genres='+context['genre']).content.replace("\n",'')
+  data=requests.get('https://www.imdb.com/search/title?genres='+context['genre']).content.decode("latin").replace("\n",'')
   print(re.findall(r'''(?<=\?ref_=adv_li_tt\"\>).*(?=\<\/a\>)''',data))
   return 'Here are top rated movies for [LOCATION] and [GENRE]'
 
