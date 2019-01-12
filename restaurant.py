@@ -16,7 +16,7 @@ RETURN_VALUES = {
         "Hello",
         "How can I help you?",
         "What's up?",
-        "What do you want to aquire?",
+        "what do you want?",
     ],
 
     "DATE": [
@@ -61,9 +61,10 @@ RETURN_VALUES = {
 NO_QUERY_STATE = random.choice(RETURN_VALUES["NO QUERY"])
 
 
+
 def on_enter_state(state, context):
     if state == "NO QUERY":
-        return no_query_on_enter_state(context)
+        return no_query_on_enter_state(NO_QUERY_STATE)
     elif state == "DATE":
         return date_on_enter_state(context)
     elif state == "LOCATION":
@@ -96,23 +97,32 @@ def on_input(state, user_input, context):
         return define_on_input(user_input, context)
 
 def no_query_on_enter_state(context):
-    return "Hello! I am restaurant helper bot"
+    return NO_QUERY_STATE
 
 def no_query_on_input(user_input, context):
-    return "DATE", {}, None    
+    if "movie" in user_input:
+        return "DATE", {}, None  
+    elif "eat out" in user_input:
+        return "DATE", {}, None
+    else:
+        return "NO QUERY", {}, ERROR_CODE
 
 def date_on_enter_state(context):
     return "What day are you wanting to go?"
     
 def date_on_input(user_input, context):
-    context['date'] = user_input
-    return 'LOCATION', context, None
+    if user_input == None or user_input == "":
+        return "DATE", {}, ERROR_CODE
+    else:
+        return 'LOCATION', context, None
+        context['date'] = user_input
 
 def location_on_enter_state(context):
     return 'Where are you wanting to eat'
 
 def location_on_input(user_input, context):
     context['location'] = user_input
+    location = user_input
     return 'FOOD', context, None
 
 def food_on_enter_state(context):
@@ -133,8 +143,8 @@ def recommend_on_enter_state(context):
 
     params = (
         ('entity_id', '260'),
-        ('entity_type', 'city'),
-        ('cuisines', '152'),
+        ('entity_type', 'city'), # alexa will find city location
+        ('cuisines', '152'), 
         ('sort', 'rating'),
         ('order', 'desc'),
         ('count', 5)
@@ -143,8 +153,9 @@ def recommend_on_enter_state(context):
     response = requests.get('https://developers.zomato.com/api/v2.1/search', headers=headers, params=params).json()
 
     names = [x["restaurant"]["name"] for x in response["restaurants"]]
+    names = ", ".join(names)
 
-    return f'Here are some recommendations. What would you like? {names}'
+    return f'Here are some recommendations for restaurants in your city. What would you like?: {names}'
 
     # more code coming
 
@@ -178,8 +189,3 @@ def define_on_enter_state(context):
 def define_on_input(user_input, context):
     context['meal'] = user_input
     return "BOOKING", context, None
-
-
-
-
-
