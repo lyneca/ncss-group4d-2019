@@ -219,6 +219,7 @@ def recommend_on_input(user_input, context):
     if user_input.startswith('no'):
         return "FOOD", context, None
     elif match_yes:
+        print(user_input, context['names'])
         if user_input in context['names']:
             context['meal'] = match_yes.group('meal')
         else:
